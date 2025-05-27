@@ -6,7 +6,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 
 public class ContactBookGUI extends JFrame {
     private ContactManager contactManager;
@@ -21,19 +20,22 @@ public class ContactBookGUI extends JFrame {
     private JButton addButton;
     private JButton deleteButton;
     private JButton searchButton;
-    private JButton viewAllButton; // all contacts after a search
+    private JButton viewAllButton;
 
     public ContactBookGUI() {
         contactManager = new ContactManager();
         contactListModel = new DefaultListModel<>();
 
-        // Frame setup
+
+
         setTitle("Akash & Hrishov's Contact Book");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(600, 450);
         setLayout(new BorderLayout(10, 10));
 
-        // Input Panel
+
+
+
         JPanel inputPanel = new JPanel(new GridLayout(4, 2, 5, 5)); // Rows, Cols, hgap, vgap
         inputPanel.setBorder(BorderFactory.createTitledBorder("Add New Contact"));
 
@@ -55,7 +57,8 @@ public class ContactBookGUI extends JFrame {
 
         add(inputPanel, BorderLayout.NORTH);
 
-        // Contact List Display Panel
+
+
         JPanel listPanel = new JPanel(new BorderLayout());
         listPanel.setBorder(BorderFactory.createTitledBorder("Contacts"));
         contactJList = new JList<>(contactListModel);
@@ -64,7 +67,8 @@ public class ContactBookGUI extends JFrame {
 
         add(listPanel, BorderLayout.CENTER);
 
-        // Search Panel
+
+
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         actionPanel.setBorder(BorderFactory.createTitledBorder("Actions & Search"));
 
@@ -84,15 +88,14 @@ public class ContactBookGUI extends JFrame {
 
         add(actionPanel, BorderLayout.SOUTH);
 
-        // Action Listeners
+
         addButton.addActionListener(e -> addContactAction());
         deleteButton.addActionListener(e -> deleteContactAction());
         searchButton.addActionListener(e -> searchContactsAction());
-        viewAllButton.addActionListener(e -> refreshContactList(contactManager.getAllContacts()));
+        viewAllButton.addActionListener(e -> refreshContactDisplayList(contactManager.getAllContacts()));
 
 
-        // Initial load (if any, or just to set up the list)
-        refreshContactList(contactManager.getAllContacts());
+        refreshContactDisplayList(contactManager.getAllContacts());
         setLocationRelativeTo(null);
         setVisible(true);
     }
@@ -108,9 +111,10 @@ public class ContactBookGUI extends JFrame {
         }
 
         contactManager.addContact(name, phone, email);
-        refreshContactList(contactManager.getAllContacts());
 
-        // Clear input fields
+        refreshContactDisplayList(contactManager.getAllContacts());
+
+
         nameTextField.setText("");
         phoneTextField.setText("");
         emailTextField.setText("");
@@ -120,14 +124,15 @@ public class ContactBookGUI extends JFrame {
     private void deleteContactAction() {
         int selectedIndex = contactJList.getSelectedIndex();
         if (selectedIndex != -1) {
-            // Confirm deletion
+
             int confirm = JOptionPane.showConfirmDialog(this,
                     "Are you sure you want to delete " + contactListModel.getElementAt(selectedIndex).getName() + "?",
                     "Confirm Deletion", JOptionPane.YES_NO_OPTION);
 
             if (confirm == JOptionPane.YES_OPTION) {
                 contactManager.removeContact(selectedIndex);
-                refreshContactList(contactManager.getAllContacts());
+				
+                refreshContactDisplayList(contactManager.getAllContacts());
                 searchTextField.setText("");
             }
         } else {
@@ -137,19 +142,24 @@ public class ContactBookGUI extends JFrame {
 
     private void searchContactsAction() {
         String searchTerm = searchTextField.getText().trim();
-        List<Contact> searchResults = contactManager.searchContacts(searchTerm);
-        refreshContactList(searchResults);
-        if (searchResults.isEmpty() && !searchTerm.isEmpty()) {
+
+        Contact[] searchResults = contactManager.searchContacts(searchTerm);
+
+        refreshContactDisplayList(searchResults);
+
+        if (searchResults.length == 0 && !searchTerm.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No contacts found matching your search.", "Search Result", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
-    private void refreshContactList(List<Contact> contactsToShow) {
-        contactListModel.clear();
-        for (Contact contact : contactsToShow) {
-            contactListModel.addElement(contact);
-        }
-    }
+    private void refreshContactDisplayList(Contact[] contactsToDisplay) {
+		contactListModel.clear();
+		if (contactsToDisplay != null) {
+			for (Contact contact : contactsToDisplay) {
+				contactListModel.addElement(contact);
+			}
+		}
+	}
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
